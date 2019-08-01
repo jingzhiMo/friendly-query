@@ -80,4 +80,26 @@ function init (queryType = [], option = {}) {
   }
 }
 
-module.exports = init
+
+// 测试数据类型
+const QUERY_TYPE = [
+  {
+    name: 'foo',
+    type: 'Int',
+    value: 0
+  },
+  {
+    name: 'bar',
+    type: 'IntArray',
+    value: [1, 2, 3]
+  },
+  {
+    name: 'baz',
+    type: 'Array',
+    value: ['a', 'b', 'c']
+  }
+]
+
+var instance = init(QUERY_TYPE)
+console.log(instance.convert({foo: null, bar: [1, 2, 3]}))
+// module.exports = init
