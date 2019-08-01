@@ -1,3 +1,5 @@
+import dateFormat from 'dateformat'
+
 // 默认处理的类型
 const DEFAULT_TYPE = {
   'Int': {
@@ -36,10 +38,10 @@ const DEFAULT_TYPE = {
     },
     stringify (date) {
       // TODO need date format library
-      return date
+      return dateFormat(date, this.option.format)
     },
     option: {
-      format: 'YYYY-MM-DD'
+      format: 'yyyy-mm-dd'
     }
   },
 
