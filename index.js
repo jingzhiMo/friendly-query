@@ -1,71 +1,6 @@
-import dateFormat from 'dateformat'
+const dateFormat = require('dateformat')
+const { isNull, isUndef } = require('./util/is-null')
 
-// 默认处理的类型
-const DEFAULT_TYPE = {
-  'Int': {
-    parse (str) {
-      return parseInt(str, this.option.radix)
-    },
-    stringify (num) {
-      return num
-    },
-    option: {
-      radix: 10
-    }
-  },
-
-  'Float': {
-    parse (str) {
-      return parseFloat(str)
-    },
-    stringify (num) {
-      return num.toString()
-    }
-  },
-
-  'String': {
-    parse (str) {
-      return str
-    },
-    stringify (str) {
-      return str
-    }
-  },
-
-  'Date': {
-    parse (str) {
-      return new Date(str)
-    },
-    stringify (date) {
-      // TODO need date format library
-      return dateFormat(date, this.option.format)
-    },
-    option: {
-      format: 'yyyy-mm-dd'
-    }
-  },
-
-  'Boolean': {
-    parse (str, value) {
-      return str === 'true' ? || value || false
-    },
-    stringify (boolean) {
-      return boolean.toString()
-    }
-  },
-
-  'Array': {
-    parse (str, value) {
-      return str => str.split(this.option.separator)
-    },
-    stringify (arr) {
-      return arr.join(this.option.separator)
-    },
-    option: {
-      separator: ','
-    }
-  }
-}
 /**
  *  @desc  路由发生变化的回调处理函数
  */
@@ -87,19 +22,6 @@ function unbindPopstate () {
   window.removeEventListener('popstate', popstateHandler)
 }
 
-// 测试数据类型
-const QUERY_TYPE = [
-  {
-    name: 'foo',
-    type: 'Int',
-    value: 0
-  },
-  {
-    name: 'bar',
-    type: 'Array',
-    value: []
-  }
-]
 /**
  *  @desc  初始化数据类型，绑定事件等
  *  @param  {Array}  queryType  query参数的类型
@@ -115,8 +37,17 @@ function init (queryType = [], option = {}) {
   }, {})
 
   return {
-    load () {
-      console.log('loadQuery')
+    /**
+     *  @desc  把url的query转换成数据对象
+     *  @param  {Object}  query  已转化为对象的url参数
+     *
+     *  @return  {Object}
+     */
+    load (query) {
+      return queryType.reduce((base, item) => {
+        base[item.name] = TYPE_HANDLER[item.type].parse(query[item.name], item.value)
+        return base
+      }, {})
     },
 
     /**
@@ -127,12 +58,22 @@ function init (queryType = [], option = {}) {
      */
     convert (queryObject) {
       return queryType.reduce((base, item) => {
+        // 数据为空
+        let value = TYPE_HANDLER[item.type].stringify(queryObject[item.name])
 
+        if (!isNull(value)) {
+          base[item.name] = value
+        }
+
+        return base
       }, {})
     },
 
     bindPopstate,
 
+    /**
+     *  @desc  取消绑定 popstate 事件
+     */
     destroy () {
       unbindPopstate()
     }
