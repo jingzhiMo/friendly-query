@@ -1,25 +1,78 @@
-const dateFormat = require('dateformat')
-const { isNull, isUndef } = require('./util/is-null')
+const { isNull } = require('./util/is-null')
+const urlParse = require('./util/url-parse')
+const DEFAULT_TYPE = require('./type')
+const pubSub = require('./util/pub-sub')
+
+// 劫持pushState方法
+let pushState = window.history.pushState
+window.history.pushState = function (...arg) {
+    pushState.apply(window.history, arg)
+    // 触发 pushState 订阅事件
+    pubSub.notify('pushState')
+}
+
+/**
+ *  @desc  比较两个不同的query参数，返回相对之前更新的字段
+ *  @param  {Object}  oldVal  旧的query参数
+ *  @param  {Object}  newVal  新的query参数
+ *
+ *  @return {Array}
+ */
+function diffQuery (oldVal, newVal) {
+  let diffAttr = new Set([])
+
+  for (let key in newVal) {
+    if (oldVal[key] !== newVal[key]) {
+      diffAttr.add(key)
+    }
+  }
+
+  for (let key in oldVal) {
+    if (oldVal[key] !== newVal[key]) {
+      diffAttr.add(key)
+    }
+  }
+
+  return Array.from(diffAttr)
+}
 
 /**
  *  @desc  路由发生变化的回调处理函数
  */
-function popstateHandler () {
-  console.log('popstate')
+function popstateHandler (attrGroup = [], initQuery) {
+  let group = [] // { attr: [], cb: fn }
+  let oldQuery = initQuery
+
+  return [
+    // setCurrentQuery
+    (value) => {
+      oldQuery = value
+    },
+
+    // popstate handler
+    () => {
+      let newQuery = urlParse()
+      let diffAttr = diffQuery(oldQuery, newQuery)
+
+      // 更新完后，当前的参数置为oldQuery
+      oldQuery = newQuery
+      console.log('diffAttr', diffAttr)
+    }
+  ]
 }
 
 /**
  *  @desc  添加全局 history 监听事件
  */
-function bindPopstate () {
-  window.addEventListener('popstate', popstateHandler)
+function bindPopstate (handler) {
+  window.addEventListener('popstate', handler)
 }
 
 /**
  *  @desc  移除监听事件
  */
-function unbindPopstate () {
-  window.removeEventListener('popstate', popstateHandler)
+function unbindPopstate (handler) {
+  window.removeEventListener('popstate', handler)
 }
 
 /**
@@ -28,24 +81,37 @@ function unbindPopstate () {
  *
  *  @return {Object}  操作query参数的函数等
  */
-function init (queryType = [], option = {}) {
+function init (queryType, option = {}) {
   // 提取需要初始化的类型，避免遍历全部类型
-  const TYPE_HANDLER = queryType.reduce((base, item) => {
+  const typeHandler = queryType.type.reduce((base, item) => {
     base[item.type] = DEFAULT_TYPE[item.type]
 
     return base
   }, {})
+  // 绑定全局事件处理
+  const [setCurrentQuery, handler] = popstateHandler([queryType], urlParse())
+  bindPopstate(handler)
+
+  // 监听 history.pushState 的回调方法
+  let topicId = pubSub.subscribe('pushState', () => {
+    setCurrentQuery(urlParse())
+  })
 
   return {
     /**
      *  @desc  把url的query转换成数据对象
-     *  @param  {Object}  query  已转化为对象的url参数
+     *  @param  {Object}  query  已转化为对象的url参数，若不传这个对象，则默认会使用方法处理当前的url的参数
      *
      *  @return  {Object}
      */
     load (query) {
-      return queryType.reduce((base, item) => {
-        base[item.name] = TYPE_HANDLER[item.type].parse(query[item.name], item.value)
+      if (!query) {
+        // 不传该参数，则会做默认处理
+        query = urlParse()
+      }
+
+      return queryType.type.reduce((base, item) => {
+        base[item.name] = typeHandler[item.type].parse(query[item.name], item.value)
         return base
       }, {})
     },
@@ -57,10 +123,10 @@ function init (queryType = [], option = {}) {
      *  @return  {Object}  各参数转换为字符串后的参数对象
      */
     convert (queryObject) {
-      return queryType.reduce((base, item) => {
-        // 数据为空
-        let value = TYPE_HANDLER[item.type].stringify(queryObject[item.name])
+      return queryType.type.reduce((base, item) => {
+        let value = typeHandler[item.type].stringify(queryObject[item.name])
 
+        // valid data, no null or ''
         if (!isNull(value)) {
           base[item.name] = value
         }
@@ -75,13 +141,17 @@ function init (queryType = [], option = {}) {
      *  @desc  取消绑定 popstate 事件
      */
     destroy () {
-      unbindPopstate()
+      // 移除订阅事件
+      pubSub.unsubscribe(topicId)
+      // 移除postate事件监听
+      unbindPopstate(handler)
     }
   }
 }
 
 
 // 测试数据类型
+/*
 const QUERY_TYPE = [
   {
     name: 'foo',
@@ -100,6 +170,12 @@ const QUERY_TYPE = [
   }
 ]
 
-var instance = init(QUERY_TYPE)
-console.log(instance.convert({foo: null, bar: [1, 2, 3]}))
-// module.exports = init
+init({
+  type: QUERY_TYPE,
+  cb () {
+    console.log('cb')
+  }
+})
+*/
+
+module.exports = init
