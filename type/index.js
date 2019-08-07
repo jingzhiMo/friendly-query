@@ -1,7 +1,28 @@
 const dateFormat = require('dateformat')
 const { isNull, isUndef } = require('../util/is-null')
 
-const DEFAULT_TYPE = {
+const option = {
+  'Int': {
+    // 默认转换为10进制
+    radix: 10
+  },
+  'Date': {
+    format: 'yyyy-mm-dd'
+  },
+  'Array': {
+    separator: ','
+  },
+  'IntArray': {
+    separator: ',',
+    // 默认转换为10进制
+    radix: 10
+  },
+  'FloatArray': {
+    separator: ','
+  }
+}
+
+const type = {
   'Int': {
     parse (str, value) {
       if (isNull(str)) return value
@@ -57,11 +78,10 @@ const DEFAULT_TYPE = {
 
       return new Date(str)
     },
-    stringify (date) {
+    stringify (date, option) {
       if (isUndef(date)) return
 
-      // TODO need date format library
-      return dateFormat(date, this.option.format)
+      return dateFormat(date, option.format)
     },
     option: {
       format: 'yyyy-mm-dd'
@@ -81,56 +101,48 @@ const DEFAULT_TYPE = {
 
   // 数组类型
   'Array': {
-    parse (str, value) {
+    parse (str, value, option) {
       if (isNull(str)) return value
 
-      return str.split(this.option.separator)
+      return str.split(option.separator)
     },
-    stringify (arr = []) {
+    stringify (arr = [], option) {
       if (!arr.length) return
 
-      return arr.join(this.option.separator)
-    },
-    option: {
-      separator: ','
+      return arr.join(option.separator)
     }
   },
 
   // 整数数组类型
   'IntArray': {
-    parse (str, value) {
+    parse (str, value, option) {
       if (isNull(str)) return value
 
-      return str.split(this.option.separator).map(item => parseInt(item, this.option.radix))
+      return str.split(option.separator).map(item => parseInt(item, option.radix))
     },
     stringify (arr = []) {
       if (!arr.length) return
 
-      return arr.join(this.option.separator)
-    },
-    option: {
-      separator: ',',
-      // 默认转换为10进制
-      radix: 10
+      return arr.join(option.separator)
     }
   },
 
   'FloatArray': {
-    parse (str, value) {
+    parse (str, value, option) {
       if (isNull(str)) return value
 
-      return str.split(this.option.separator).map(item => parseFloat(item))
+      return str.split(option.separator).map(item => parseFloat(item))
     },
-    stringify (arr = []) {
+    stringify (arr = [], option) {
       if (!arr.length) return
 
-      return arr.join(this.option.separator)
-    },
-    option: {
-      separator: ','
+      return arr.join(option.separator)
     }
   }
 }
 
 // 默认支持的类型与处理方法
-module.exports = DEFAULT_TYPE
+module.exports = {
+  type: type,
+  option
+}

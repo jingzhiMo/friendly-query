@@ -1,6 +1,6 @@
 const { isNull } = require('./util/is-null')
 const urlParse = require('./util/url-parse')
-const DEFAULT_TYPE = require('./type')
+const { type: DEFAULT_TYPE, option: DEFAULT_OPTION } = require('./type')
 const pubSub = require('./util/pub-sub')
 
 // 劫持pushState方法
@@ -111,7 +111,7 @@ function init (queryType, option = {}) {
       }
 
       return queryType.type.reduce((base, item) => {
-        base[item.name] = typeHandler[item.type].parse(query[item.name], item.value)
+        base[item.name] = typeHandler[item.type].parse(query[item.name], item.value, DEFAULT_OPTION[item.type])
         return base
       }, {})
     },
@@ -123,8 +123,8 @@ function init (queryType, option = {}) {
      *  @return  {Object}  各参数转换为字符串后的参数对象
      */
     convert (queryObject) {
-      return queryType.type.reduce((base, item) => {
-        let value = typeHandler[item.type].stringify(queryObject[item.name])
+      return queryType.type.reduce((base, { type, name }) => {
+        let value = typeHandler[type].stringify(queryObject[name], DEFAULT_OPTION[type])
 
         // valid data, no null or ''
         if (!isNull(value)) {
