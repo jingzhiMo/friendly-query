@@ -1,8 +1,10 @@
+const extendObject = require('lodash/extend')
 const { isNull } = require('./util/is-null')
 const urlParse = require('./util/url-parse')
 const { DEFAULT_TYPE, DEFAULT_OPTION } = require('./type')
 const pubSub = require('./util/pub-sub')
-const extend = require('lodash/extend')
+let localType = extendObject({}, DEFAULT_TYPE)
+let localOption = extendObject({}, DEFAULT_OPTION)
 
 // 劫持pushState方法
 let pushState = window.history.pushState
@@ -83,11 +85,11 @@ function unbindPopstate (handler) {
  *  @return {Object}  操作query参数的函数等
  */
 function init (queryType, option = {}) {
-  const USER_OPTION = extend({}, DEFAULT_OPTION, option)
+  const USER_OPTION = extendObject({}, localOption, option)
 
   // 提取需要初始化的类型，避免遍历全部类型
   const typeHandler = queryType.type.reduce((base, item) => {
-    base[item.type] = DEFAULT_TYPE[item.type]
+    base[item.type] = localType[item.type]
 
     return base
   }, {})
@@ -103,15 +105,11 @@ function init (queryType, option = {}) {
   return {
     /**
      *  @desc  把url的query转换成数据对象
-     *  @param  {Object}  query  已转化为对象的url参数，若不传这个对象，则默认会使用方法处理当前的url的参数
      *
      *  @return  {Object}
      */
-    load (query) {
-      if (!query) {
-        // 不传该参数，则会做默认处理
-        query = urlParse()
-      }
+    load () {
+      query = urlParse()
 
       return queryType.type.reduce((base, item) => {
         base[item.name] = typeHandler[item.type].parse(query[item.name], item.value, USER_OPTION[item.type])
@@ -138,8 +136,6 @@ function init (queryType, option = {}) {
       }, {})
     },
 
-    bindPopstate,
-
     /**
      *  @desc  取消绑定 popstate 事件
      */
@@ -149,6 +145,24 @@ function init (queryType, option = {}) {
       // 移除postate事件监听
       unbindPopstate(handler)
     }
+  }
+}
+
+/**
+ *  @desc  扩充数据类型
+ *  @param  {Object}  type  数据类型
+ *
+ *  @return
+ */
+function extend (type = {}) {
+  for (let key in type) {
+    let { parse, stringify, option } = type[key]
+
+    localType[key] = {
+      parse: parse,
+      stringify: stringify
+    }
+    localOption[key] = option
   }
 }
 
@@ -181,4 +195,7 @@ init({
 })
 */
 
-module.exports = init
+module.exports = {
+  init,
+  extend
+}

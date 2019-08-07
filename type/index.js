@@ -38,10 +38,6 @@ const DEFAULT_TYPE = {
       if (isUndef(num)) return
 
       return num.toString()
-    },
-    option: {
-      // 默认转换为10进制
-      radix: 10
     }
   },
 
@@ -82,9 +78,6 @@ const DEFAULT_TYPE = {
       if (isUndef(date)) return
 
       return dateFormat(date, option.format)
-    },
-    option: {
-      format: 'yyyy-mm-dd'
     }
   },
 
