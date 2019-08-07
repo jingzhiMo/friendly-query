@@ -1,7 +1,8 @@
 const { isNull } = require('./util/is-null')
 const urlParse = require('./util/url-parse')
-const { type: DEFAULT_TYPE, option: DEFAULT_OPTION } = require('./type')
+const { DEFAULT_TYPE, DEFAULT_OPTION } = require('./type')
 const pubSub = require('./util/pub-sub')
+const extend = require('lodash/extend')
 
 // 劫持pushState方法
 let pushState = window.history.pushState
@@ -82,6 +83,8 @@ function unbindPopstate (handler) {
  *  @return {Object}  操作query参数的函数等
  */
 function init (queryType, option = {}) {
+  const USER_OPTION = extend({}, DEFAULT_OPTION, option)
+
   // 提取需要初始化的类型，避免遍历全部类型
   const typeHandler = queryType.type.reduce((base, item) => {
     base[item.type] = DEFAULT_TYPE[item.type]
@@ -111,7 +114,7 @@ function init (queryType, option = {}) {
       }
 
       return queryType.type.reduce((base, item) => {
-        base[item.name] = typeHandler[item.type].parse(query[item.name], item.value, DEFAULT_OPTION[item.type])
+        base[item.name] = typeHandler[item.type].parse(query[item.name], item.value, USER_OPTION[item.type])
         return base
       }, {})
     },
@@ -124,11 +127,11 @@ function init (queryType, option = {}) {
      */
     convert (queryObject) {
       return queryType.type.reduce((base, { type, name }) => {
-        let value = typeHandler[type].stringify(queryObject[name], DEFAULT_OPTION[type])
+        let value = typeHandler[type].stringify(queryObject[name], USER_OPTION[type])
 
         // valid data, no null or ''
         if (!isNull(value)) {
-          base[item.name] = value
+          base[name] = value
         }
 
         return base
