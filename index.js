@@ -80,27 +80,32 @@ function unbindPopstate (handler) {
 
 /**
  *  @desc  初始化数据类型，绑定事件等
- *  @param  {Array}  queryType  query参数的类型
+ *  @param  {Array|Object}  groupType  分组的query参数，当为Object类型的时候，则视为只有一个分组
+ *  @param  {Object} groupType[i].type  对应组的类型
+ *  @param  {Object} groupType[i].callback  对应组参数更改的回调函数
  *
  *  @return {Object}  操作query参数的函数等
  */
-function init (queryType, option = {}) {
-  const USER_OPTION = extendObject({}, localOption, option)
+function init (groupType, option = {}) {
+  const userOption = extendObject({}, localOption, option)
 
-  // 提取需要初始化的类型，避免遍历全部类型
-  const typeHandler = queryType.type.reduce((base, item) => {
-    base[item.type] = localType[item.type]
+  if (!Array.isArray(groupType)) {
+    groupType = [groupType]
+  }
 
-    return base
-  }, {})
   // 绑定全局事件处理
-  const [setCurrentQuery, handler] = popstateHandler([queryType], urlParse())
-  bindPopstate(handler)
-
+  const [setCurrentQuery, handler] = popstateHandler(groupType, urlParse())
   // 监听 history.pushState 的回调方法
-  let topicId = pubSub.subscribe('pushState', () => {
+  const topicId = pubSub.subscribe('pushState', () => {
     setCurrentQuery(urlParse())
   })
+  // 汇总所有分组的字段
+  let summaryGroup = groupType.reduce((baseValue, group) => {
+    return extendObject(baseValue, group.type)
+  }, {})
+
+  // 绑定浏览器事件
+  bindPopstate(handler)
 
   return {
     /**
@@ -109,31 +114,53 @@ function init (queryType, option = {}) {
      *  @return  {Object}
      */
     load () {
-      query = urlParse()
+      // 获取 url 上的参数
+      let query = urlParse()
 
-      return queryType.type.reduce((base, item) => {
-        base[item.name] = typeHandler[item.type].parse(query[item.name], item.value, USER_OPTION[item.type])
-        return base
-      }, {})
+      // 返回分组对应的参数
+      return groupType.map(group => {
+        let itemData = {}
+
+        for (let name in group.type) {
+          let type = group.type[name].type
+
+          itemData[name] = localType[type].parse(query[name], summaryGroup[name].value, userOption[type])
+        }
+
+        return itemData
+      })
     },
 
     /**
      *  @desc  把不同类型的参数转换为字符串
-     *  @param  {Object}  queryObject  参数对象，通常为 load 参数返回的数据类型
+     *  @param  {Array|Object}  groupQuery  参数对象，通常为 load 参数返回的数据类型
+     *  @param  {Boolean}  isMerged  是否把每个数组的对象合并到一个，默认不合并
      *
-     *  @return  {Object}  各参数转换为字符串后的参数对象
+     *  @return  {Array}  各参数转换为字符串后的参数对象
      */
-    convert (queryObject) {
-      return queryType.type.reduce((base, { type, name }) => {
-        let value = typeHandler[type].stringify(queryObject[name], USER_OPTION[type])
+    convert (groupQuery, isMerged = false) {
+      if (!Array.isArray(groupQuery)) {
+        groupQuery = [groupQuery]
+        isMerged = true
+      }
 
-        // valid data, no null or ''
-        if (!isNull(value)) {
-          base[name] = value
+      let groupString = groupQuery.map(group => {
+        let itemString = {}
+
+        for (let name in group) {
+          let type = summaryGroup[name].type
+          let value = localType[type].stringify(group[name], userOption[type])
+
+          // valid data, no null or ''
+          if (!isNull(value)) {
+            itemString[name] = value
+          }
         }
 
-        return base
-      }, {})
+        return itemString
+      })
+
+      return groupString
     },
 
     /**
@@ -165,35 +192,6 @@ function extend (type = {}) {
     localOption[key] = option
   }
 }
-
-
-// 测试数据类型
-/*
-const QUERY_TYPE = [
-  {
-    name: 'foo',
-    type: 'Int',
-    value: 0
-  },
-  {
-    name: 'bar',
-    type: 'IntArray',
-    value: [1, 2, 3]
-  },
-  {
-    name: 'baz',
-    type: 'Array',
-    value: ['a', 'b', 'c']
-  }
-]
-
-init({
-  type: QUERY_TYPE,
-  cb () {
-    console.log('cb')
-  }
-})
-*/
 
 module.exports = {
   init,
