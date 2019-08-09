@@ -42,7 +42,7 @@ function diffQuery (oldVal, newVal) {
 /**
  *  @desc  路由发生变化的回调处理函数
  */
-function popstateHandler (attrGroup = [], initQuery) {
+function popstateHandler (groupType = [], initQuery) {
   let group = [] // { attr: [], cb: fn }
   let oldQuery = initQuery
 
@@ -56,10 +56,22 @@ function popstateHandler (attrGroup = [], initQuery) {
     () => {
       let newQuery = urlParse()
       let diffAttr = diffQuery(oldQuery, newQuery)
+      let callbackSet = new Set()
+
+      diffAttr.forEach(attr => {
+        groupType.forEach(({ type, callback }) => {
+          if (type[attr]) {
+            callbackSet.add(callback)
+          }
+        })
+      })
+
+      for (let callback of callbackSet) {
+        callback()
+      }
 
       // 更新完后，当前的参数置为oldQuery
       oldQuery = newQuery
-      console.log('diffAttr', diffAttr)
     }
   ]
 }
