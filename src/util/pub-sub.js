@@ -2,7 +2,7 @@
 let topicList = {}
 let uid = 0
 
-module.exports = {
+export default {
     notify (topic, ...arg) {
         // 没有相关订阅事件
         if (!topicList[topic] || !topicList[topic].length) return

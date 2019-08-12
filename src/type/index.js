@@ -1,7 +1,7 @@
-const dateFormat = require('dateformat')
-const { isNull, isUndef } = require('../util/is-null')
+import dateFormat from 'dateformat'
+import { isNull, isUndef } from '../util/is-null'
 
-const DEFAULT_OPTION = {
+export const DEFAULT_OPTION = {
   'Int': {
     // 默认转换为10进制
     radix: 10
@@ -22,7 +22,7 @@ const DEFAULT_OPTION = {
   }
 }
 
-const DEFAULT_TYPE = {
+export const DEFAULT_TYPE = {
   'Int': {
     parse (str, value) {
       if (isNull(str)) return value
@@ -132,10 +132,4 @@ const DEFAULT_TYPE = {
       return arr.join(option.separator)
     }
   }
-}
-
-// 默认支持的类型与处理方法
-module.exports = {
-  DEFAULT_OPTION,
-  DEFAULT_TYPE
 }

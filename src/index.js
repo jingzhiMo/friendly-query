@@ -1,8 +1,9 @@
-const extendObject = require('lodash/extend')
-const { isNull } = require('./util/is-null')
-const urlParse = require('./util/url-parse')
-const { DEFAULT_TYPE, DEFAULT_OPTION } = require('./type')
-const pubSub = require('./util/pub-sub')
+import extendObject from 'lodash/extend'
+import { isNull } from './util/is-null'
+import urlParse from './util/url-parse'
+import { DEFAULT_TYPE, DEFAULT_OPTION } from './type/index'
+import pubSub from './util/pub-sub'
+
 let localType = extendObject({}, DEFAULT_TYPE)
 let localOption = extendObject({}, DEFAULT_OPTION)
 
@@ -98,7 +99,7 @@ function unbindPopstate (handler) {
  *
  *  @return {Object}  操作query参数的函数等
  */
-function init (groupType, option = {}) {
+export function init (groupType, option = {}) {
   const userOption = extendObject({}, localOption, option)
 
   if (!Array.isArray(groupType)) {
@@ -193,7 +194,7 @@ function init (groupType, option = {}) {
  *
  *  @return
  */
-function extend (type = {}) {
+export function extend (type = {}) {
   for (let key in type) {
     let { parse, stringify, option } = type[key]
 
@@ -203,9 +204,4 @@ function extend (type = {}) {
     }
     localOption[key] = option
   }
-}
-
-module.exports = {
-  init,
-  extend
 }

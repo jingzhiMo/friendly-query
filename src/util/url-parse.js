@@ -20,4 +20,4 @@ const parseQuery = () => {
     return param
 }
 
-module.exports = parseQuery
+export default parseQuery
