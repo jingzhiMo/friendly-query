@@ -1,6 +1,6 @@
 {
   "name": "friendly-query",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "friendly-query",
   "main": "dist/bundle.js",
   "scripts": {
