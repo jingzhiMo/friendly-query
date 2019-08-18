@@ -12,7 +12,8 @@
   },
   "keywords": [
     "url",
-    "query"
+    "query",
+    "route"
   ],
   "author": "mojingzhi",
   "license": "MIT",

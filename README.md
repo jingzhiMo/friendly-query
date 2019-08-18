@@ -1,9 +1,33 @@
 # friendly-query
 
-
 一个配合url的query参数使用的工具
 
-## application scenario
+
+Table of Contents
+=================
+
+      * [Background](#background)
+      * [Install](#install)
+      * [Usage](#usage)
+         * [初始化url参数的对应的数据类型](#初始化url参数的对应的数据类型)
+         * [url参数转换为具体数据类型](#url参数转换为具体数据类型)
+         * [具体数据类型转换为url的字符串类型](#具体数据类型转换为url的字符串类型)
+      * [More Usage](#more-usage)
+         * [更改数据类型配置](#更改数据类型配置)
+         * [自定义数据类型](#自定义数据类型)
+      * [默认支持数据类型](#默认支持数据类型)
+      * [API](#api)
+         * [全局方法](#全局方法)
+            * [init](#init)
+            * [extend](#extend)
+         * [实例方法](#实例方法)
+            * [load](#load)
+            * [convert](#convert)
+            * [destroy](#destroy)
+      * [License](#license)
+
+
+## Background
 
 通常路由库可以处理从：`/path1` => `path2`的跳转切换不同的页面；但是对`/path1?foo=1`切换到`/path2?foo=2`这种情况支持不是很好。如果页面对应的参数不增加到url中，用户在页面更改部分参数后，刷新页面，用户之前选择的这一部分参数就会被重置而不会选中后的页面处理；
 
@@ -11,7 +35,7 @@
 
 这个工具总体来是处理这些情况，只要定义需要监听的url参数，在url发生变化后，触发对应的回调函数；能够将url的字符串参数与设定的数据类型更灵活的转换，也能够灵活将不同数据类型转换为字符串后，作为异步请求的参数，减少手动转换类型。
 
-## install
+## Install
 
 ```
 yarn add friendly-query
@@ -19,7 +43,7 @@ yarn add friendly-query
 npm install friendly-query
 ```
 
-## usage
+## Usage
 
 ### 初始化url参数的对应的数据类型
 
@@ -100,7 +124,7 @@ console.log(stringQuery)
 // }
 ```
 
-## more usage
+## More Usage
 
 ### 更改数据类型配置
 例如对于`IntArr`的数据类型，默认根据逗号`,`分割多个元素，如果更改这个规则，可以在`init`方法的时候，传入第二个参数
@@ -331,4 +355,8 @@ instance.convert([
 instance.destroy()
 ```
 
+
 **注意：当从不同路由切换的时候，需要在路由切换前，先执行`destroy`方法，否则会重复监听事件**
+
+## License
+MIT
