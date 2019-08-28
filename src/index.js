@@ -1,5 +1,5 @@
 import extendObject from 'lodash/extend'
-import { isNull } from './util/is-null'
+import { isNull, isUndef } from './util/is-null'
 import urlParse from './util/url-parse'
 import { DEFAULT_TYPE, DEFAULT_OPTION } from './type/index'
 import pubSub from './util/pub-sub'
@@ -204,4 +204,28 @@ export function extend (type = {}) {
     }
     localOption[key] = option
   }
+}
+
+/**
+ *  @desc  将数据对象转换成url的query参数，并生成新的url，带上query参数
+ *  @param  baseUrl  {String}  基础的url
+ *  @param  formStrData  {Object}  query参数，
+ */
+export function generateUrl (baseUrl = '/', formStrData = {}) {
+  let query = ''
+
+  if (!Object.keys(formStrData).length) return baseUrl
+
+  for (let key in formStrData) {
+    let value = formStrData[key]
+
+    value = isUndef(value) ? '' : value
+    query += `&${key}=${value}`
+  }
+
+  if (baseUrl.indexOf('?') !== -1) {
+    return baseUrl + query
+  }
+
+  return baseUrl + '?' + query.substr(1)
 }
