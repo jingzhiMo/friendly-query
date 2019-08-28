@@ -188,7 +188,7 @@ instance.convert({ foo: 'foovalue' }) // { foo: 'foovalue_sf' }
 
 更多数据类型配置可以看配置表格
 
-## 默认支持数据类型
+## Default support data type
 
 |type|option|description|
 | :-----| :---- | :---- |
@@ -292,6 +292,45 @@ extend({
 返回值：`String` 该参数从设定的数据类型转换为字符串
 
 *需要注意的是，若传入的数据类型与默认已支持的类型一致，则默认类型的处理方法会被覆盖；建议对默认支持的类型，在`init`方法更改对应类型的`option`*
+
+#### generateUrl
+
+* 参数
+  * `String baseUrl`  基础的url
+  * `Object formStrData` 需要拼接为query参数的对象，对象每个value值都是字符串
+* 返回值 `String` 已基础的url拼接参数的新url
+* 用法
+
+```js
+import { generateUrl } from 'friendly-query'
+
+generateUrl('/foo', {
+  bar: 'barvalue',
+  baz: 'baz'
+})
+
+// 生成url: /foo?bar=barvalue&baz=baz
+
+generateUrl('/foo?xyz=xxx', {
+  bar: 'barvalue',
+  baz: 'baz'
+})
+
+// 生成url: /foo?xyz=xxx&bar=barvalue&baz=baz
+```
+
+通常情况可以，可以配合实例方法`convert`来使用：
+
+```js
+let newUrl = generateUrl('/foo', instance.convert({
+  date: new Date('2019-01-01'),
+  bar: [1, 2, 3]
+}))
+// 更改当前的url
+window.history.pushState(null, null, newUrl)
+
+// 生成的url为： /foo?date=2019-01-01&bar=1,2,3
+```
 
 ### 实例方法
 实例是指：`init()`函数返回的对象
