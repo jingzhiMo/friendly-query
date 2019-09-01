@@ -22,7 +22,7 @@ export default {
 
         // 已存在对应的事件类型
         if (topicList[topic]) {
-            topicList.push(cbData)
+            topicList[topic].push(cbData)
         } else {
             topicList[topic] = [cbData]
         }
