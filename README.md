@@ -350,8 +350,10 @@ instance.load()
 
 #### convert
 
-* 参数：`{Array|Object} groupQuery` 需要从设定的数据类型转换为url参数所用的字符串类型
-* 返回值：`Array` 根据参数分组返回对应转换后的字符串数据
+* 参数：
+  * `{Array|Object} groupQuery` 需要从设定的数据类型转换为url参数所用的字符串类型
+  * `{Boolean} isMerged` 对转换后的数组字符串数据合并到一个对象中，默认合并
+* 返回值：`Array|Object` 根据参数分组返回对应转换后的字符串数据
 * 用法
 
 ```js

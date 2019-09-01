@@ -24,6 +24,7 @@ yarn.lock
 
 # source code
 /src
+/example
 
 # build
 /dist
