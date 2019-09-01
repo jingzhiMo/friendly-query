@@ -24,10 +24,10 @@ export const DEFAULT_OPTION = {
 
 export const DEFAULT_TYPE = {
   'Int': {
-    parse (str, value) {
+    parse (str, value, option) {
       if (isNull(str)) return value
 
-      let num = parseInt(str, this.option.radix)
+      let num = parseInt(str, option.radix)
 
       // not a number
       if (isNaN(num)) return value
