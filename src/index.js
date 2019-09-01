@@ -147,11 +147,11 @@ export function init (groupType, option = {}) {
     /**
      *  @desc  把不同类型的参数转换为字符串
      *  @param  {Array|Object}  groupQuery  参数对象，通常为 load 参数返回的数据类型
-     *  @param  {Boolean}  isMerged  是否把每个数组的对象合并到一个，默认不合并
+     *  @param  {Boolean}  isMerged  是否把每个数组的对象合并到一个，默认合并
      *
      *  @return  {Array}  各参数转换为字符串后的参数对象
      */
-    convert (groupQuery, isMerged = false) {
+    convert (groupQuery, isMerged = true) {
       if (!Array.isArray(groupQuery)) {
         groupQuery = [groupQuery]
       }
