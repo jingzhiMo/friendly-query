@@ -154,7 +154,6 @@ export function init (groupType, option = {}) {
     convert (groupQuery, isMerged = false) {
       if (!Array.isArray(groupQuery)) {
         groupQuery = [groupQuery]
-        isMerged = true
       }
 
       let groupString = groupQuery.map(group => {
@@ -172,6 +171,12 @@ export function init (groupType, option = {}) {
 
         return itemString
       })
+
+      if (isMerged) {
+        return groupString.reduce((base, item) => {
+          return extendObject(base, item)
+        }, {})
+      }
 
       return groupString
     },
