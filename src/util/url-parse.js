@@ -13,7 +13,7 @@ const parseQuery = () => {
         const [key, value] = group[i].split('=')
 
         if (key.trim().length) {
-            param[key] = value
+            param[key] = decodeURIComponent(value)
         }
     }
 
