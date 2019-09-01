@@ -16,6 +16,8 @@
       <button @click="update('num')">update num</button>
       <button @click="update('numAry')">update numAry</button>
       <button @click="update('date')">update date</button>
+    </div>
+    <div class="option">
       <button @click="update('search')">update search</button>
       <button @click="update('order')">update order</button>
     </div>
@@ -64,7 +66,7 @@ export default {
   mounted () {
     this.instance = init([{
       type: queryDataType1,
-      // 对应数据发生变化的时候的触发回调
+      // queryDataType change callback. Usually user click browsers back button or forward button
       callback: () => {
         this.$set(this.query, 0, this.instance.load()[0])
         this.fetchMethod1()
@@ -80,7 +82,7 @@ export default {
   },
 
   beforeDestroy () {
-    // 移除事件监听
+    // remove event listener
     this.instance.destroy()
   },
 
@@ -95,14 +97,14 @@ export default {
     },
     fetchMethod1 () {
       this.loading1 = true
-      this.sendRequest(this.query[0]).then(() => {
+      this.sendRequest(this.instance.convert(this.query[0])).then(() => {
         this.loading1 = false
       })
     },
 
     fetchMethod2 () {
       this.loading2 = true
-      this.sendRequest(this.query[1]).then(() => {
+      this.sendRequest(this.instance.convert(this.query[1])).then(() => {
         this.loading2 = false
       })
     },
@@ -143,7 +145,7 @@ export default {
       // 更新到当前页面路径
       this.$router.push({
         name: this.$route.name,
-        query: this.instance.convert(this.query, true)
+        query: this.instance.convert(this.query)
       })
       this[method]()
     }
